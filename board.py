@@ -40,28 +40,34 @@ class Board:
         pass
 
 
-    def print_board(self):
+
+    def print_board(self, gap_btw_checkers=5):
         """ Prints the current board for human visualisation """
-        print('='*50)
+        print('=' * 75)
         print('Current Status:')
 
         cur_board = self._board[:, :, 0]    # Get current board from the topmost layer
-        visual_dim = BOARD_WIDTH * 2 - 1    # Dimensions for visualisation
+        visual_width = BOARD_WIDTH * (gap_btw_checkers + 1) - gap_btw_checkers
+        visual_height = BOARD_HEIGHT * 2 - 1    # Dimensions for visualisation
+        leading_spaces = visual_width // 2
 
-        for i in range(1, visual_dim + 1):
-            num_slots = i if i <= BOARD_WIDTH else visual_dim - i + 1       # Number of slots in the board row
-            print('\t\t', end='')
-            print(' ' * ((visual_dim - 2 * num_slots + 1) // 2), end='')    # Leading spaces
-            print(' '.join(map(str, cur_board.diagonal(BOARD_WIDTH - i))))  # Board contents
-            print(' ' * ((visual_dim - 2 * num_slots + 1) // 2))            # Trailing spaces
+        for i in range(1, visual_height + 1):
+            # Number of slots in the board row
+            num_slots = i if i <= BOARD_WIDTH else visual_height - i + 1
+            print('\t\t\t', end='')
+            # Print leading spaces
+            print(' ' * ((leading_spaces - (num_slots - 1) * ((gap_btw_checkers + 1) // 2))), end='')
+            print((' ' * gap_btw_checkers).join(map(str, cur_board.diagonal(BOARD_WIDTH - i))), end='\n\n')  # Board contents
 
-        print('='*50)
+        print('=' * 75)
+
 
 
     def valid_moves(self, cur_player):
         """ Returns the list of valid moves given the current player """
         # TODO: return a list of valid moves given the current players
         pass
+
 
 
 if __name__ == '__main__':
