@@ -8,7 +8,6 @@ ROWS_OF_CHECKERS = 3
 BOARD_WIDTH = BOARD_HEIGHT = ROWS_OF_CHECKERS * 2 + 1
 NUM_HIST_MOVES = 3      # Number of history moves to keep
 
-
 class Board:
     def __init__(self):
         self._board = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES), dtype='uint8')  # Initialize empty board
@@ -33,12 +32,27 @@ class Board:
         """
         return self._board
 
+      
     def check_win(self):
         """ Returns the winner given the current board state; -1 if game still going """
         cur_board = self._board[:, :, 0]
-        # TODO: Check if there is a winner given the current board
-        pass
+        # to win:
+        # 	player 1: go to upper right
+        # 	player 2: 		lower left
+        one_win = two_win = True
+        for k in range(BOARD_WIDTH - ROWS_OF_CHECKERS, BOARD_WIDTH):
+            if one_win:
+                up_diag = cur_board.diagonal(k)
+                if not np.array_equal(up_diag, [PLAYER_ONE]*len(up_diag)):
+                    one_win = False
+            if two_win:
+                down_diag = cur_board.diagonal(-k)
+                if not np.array_equal(down_diag, [PLAYER_TWO]*len(down_diag)):
+                    two_win = False
 
+            if not one_win and not two_win:
+              return 0
+        return PLAYER_ONE if one_win else PLAYER_TWO
 
 
     def print_board(self, gap_btw_checkers=5):
@@ -70,10 +84,15 @@ class Board:
 
 
 
+
 if __name__ == '__main__':
     board = Board()
 
-    print(board.board)
     # print(board.board)
-    board.print_board()
-    # board.check_win()
+    # board.print_board()
+    # print(board.check_win())
+
+    print(board.check_win())
+
+    # for i in range(50000):
+    # 	board.check_win()
