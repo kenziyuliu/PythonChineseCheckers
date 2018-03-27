@@ -105,4 +105,4 @@ if __name__ == '__main__':
 	# print(board.check_win())
 	# print(board.check_win())
 	# for i in range(50000):
-	# 	board.check_win()
+
