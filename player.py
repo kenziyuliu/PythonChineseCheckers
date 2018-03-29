@@ -32,11 +32,14 @@ class HumanPlayer:
 
         valid_moves = board.valid_moves(self._player_num)
         human_valid_moves = dict()
-
+        
         for key in valid_moves:
             human_valid_moves[board_utils.np_index_to_human_coord(key)] = [board_utils.np_index_to_human_coord(to) for to in valid_moves[key]]
 
-        print('valid moves: \n', human_valid_moves, end='\n\n')
+        for checker in human_valid_moves:
+            print("Checker {} can move to: {}".format(checker, human_valid_moves[checker]))
+
+        print()
 
         (from_i, from_j), (to_i, to_j) = (-1, -1), (-1, -1)
         while 1:
@@ -81,4 +84,3 @@ class AiPlayer:
         """
         # TODO
         pass
-
