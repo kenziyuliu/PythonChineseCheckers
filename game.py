@@ -16,6 +16,7 @@ class Game:
 
         self.board = Board()
 
+
     def get_player_types(self):
         p1_type = p2_type = ''
         while 1:
