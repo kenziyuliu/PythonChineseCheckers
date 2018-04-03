@@ -37,11 +37,10 @@ class HumanPlayer:
 
         for key in valid_moves:
             human_valid_moves[board_utils.np_index_to_human_coord(key)] = [board_utils.np_index_to_human_coord(to) for to in valid_moves[key]]
-        # TODO sort valid moves
+
         for checker in human_valid_moves:
             print("Checker {} can move to: {}".format(checker, sorted(human_valid_moves[checker])))
         print()
-        # TODO take from_coord to_coord in one line
         (from_i, from_j), (to_i, to_j) = (-1, -1), (-1, -1)
         while 1:
             # x = the row number on visualised board, y = the position of the checker in that row from left

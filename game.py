@@ -48,7 +48,9 @@ class Game:
         self.board.visualise()
         print('Player {} wins!'.format(winner))
 
-        # TODO: once we have a winner, start network training procedure here
+        # TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+        # TODO: once we have a winner, start network training procedure here    TODO
+        # TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
 
 if __name__ == '__main__':
