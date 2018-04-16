@@ -29,7 +29,7 @@ class Model:
             model_input[:, :, channel * 2] = cur_layer
             model_input[:, :, channel * 2 + 1] = op_layer
 
-        if cur_player == 1: # player 2 to play
+        if cur_player == 2: # player 2 to play
             model_input[:, :, NUM_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT), dtype="uint8")
 
         return model_input
