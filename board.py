@@ -104,7 +104,7 @@ class Board:
         result.append(checker_pos)
         check_map[checker_pos] = 1
         for walk_dir in self.directions:
-            (row, col) = tuple(map(operator.add, checker_pos, walk_dir))
+            row, col = tuple(map(operator.add, checker_pos, walk_dir))
             if not board_utils.is_valid_pos(row, col):
                 continue
             if self._board[row, col, 0] == 0:
@@ -112,9 +112,9 @@ class Board:
                 check_map[row, col] = 1
 
         # check continous jump moves
-        self.board[checker_pos[0], checker_pos[1]] = 0;
+        self.board[checker_pos[0], checker_pos[1], 0] = 0;
         self.valid_checker_jump_moves(result, check_map, checker_pos)
-        self.board[checker_pos[0], checker_pos[1]] = cur_player;
+        self.board[checker_pos[0], checker_pos[1], 0] = cur_player;
         result.remove(checker_pos)
         return result
 
@@ -188,7 +188,6 @@ class Board:
         for checker_num, checker_pos in self.checkers_pos[cur_player].items():
             if (checker_pos == origin_pos):
                 self.checkers_pos[cur_player][checker_num] = dest_pos
-        
 
         # Update history
         self._board = np.concatenate((np.expand_dims(cur_board, axis=2), self._board[:, :, :NUM_HIST_MOVES - 1]), axis=2)
