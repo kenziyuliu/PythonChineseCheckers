@@ -199,6 +199,19 @@ class Board:
 
         return self.check_win()
 
+    def player_progress(self, player_id):
+        """
+        Given player_id, return number of its checkers having reached the opponent's field.
+        """
+        cur_board = self.board[:, :, 0]
+        dia_sign = player_id if player_id == 1 else -1
+        reached_checkers_num = 0
+        for k in range(BOARD_WIDTH - ROWS_OF_CHECKERS, BOARD_WIDTH):
+                diag = cur_board.diagonal(dia_sign * k)
+                for i in diag:
+                    if i == player_id:
+                        reached_checkers_num += 1;
+        return reached_checkers_num
 
 if __name__ == '__main__':
     """
