@@ -73,19 +73,18 @@ class Model:
 
 
     @staticmethod
-    def to_model_input(board, cur_player, timestep):
+    def to_model_input(board, cur_player):
         """
         Input:
             board: 7 x 7 x 3 board._board. Each channel contains positions of both players' checkers.
             cur_player: player number of the current player
-            timestep: the layer of model_input is all zeros if t<0
         Output:
             7 x 7 x 7. First 3 channel is player 1, next 3 channel is player 2, last channel is all 0 if player 1 is to play.
         """
         model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES * 2 + 1), dtype="uint8") # may change dtype afterwards
         op_player = PLAYER_ONE + PLAYER_TWO - cur_player
         for channel in range(NUM_HIST_MOVES):
-            if timestep - channel < 0:
+            if not np.any(board[:, :, channel]): # timestep < 0
                 break
 
             op_layer = np.copy(board[:, :, channel])
