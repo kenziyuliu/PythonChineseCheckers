@@ -4,6 +4,8 @@ from constants import *
 import copy
 import os
 import random
+from MCTS import *
+from board import *
 
 """
 Both players must support decide_move(self, board, verbose) method
@@ -87,7 +89,6 @@ class GreedyPlayer:
         pick_start, pick_end = random.choice(filtered_best_moves)
 
         if verbose:
-            board.visualise(self.player_num)
             print('GreedyPlayer moved from {} to {}'.format(pick_start, pick_end))
 
         return board_utils.human_coord_to_np_index(pick_start), \
@@ -107,5 +108,19 @@ class AiPlayer:
         :type board: Class Board
         :rtype A list of 2 tuples, specifying the move's FROM and TO.
         """
-        # TODO
-        pass
+        node = Node(board, self.player_num)
+        tree = MCTS(node, C_PUCT, SIMULATION_ITR_NUM)
+        return tree.search() 
+
+
+if __name__ == "__main__":
+    ai = AiPlayer(1)
+    board = Board()
+    print(ai.decide_move(board))
+
+
+
+
+
+
+

@@ -8,6 +8,7 @@ from constants import *
 from loss import softmax_cross_entropy_with_logits
 import model_configs
 
+
 class Model:
     def __init__(self, input_dim, filters):
         self.input_dim = input_dim
@@ -126,7 +127,6 @@ class Model:
         pos = offset // BOARD_WIDTH, offset % BOARD_WIDTH
         return checker_id, pos
 
-
 class ResidualCNN(Model):
     def __init__(self, input_dim, filters):
         Model.__init__(self, input_dim, filters)
@@ -202,7 +202,7 @@ class ResidualCNN(Model):
                 kernel_regularizer=regularizer,
                 name="policy_head")(x)
         return x
-
+      
 if __name__ == '__main__':
     """
     Test cases here
@@ -212,10 +212,13 @@ if __name__ == '__main__':
         checker_pos.append(Model.decode_checker_index(i))
         # print(Model.decode_checker_index(i))
 
+
     count = 0
     for checker_id, pos in checker_pos:
         assert count == Model.encode_checker_index(checker_id, pos)
         # print(Model.encode_checker_index(checker_id, pos))
+        
         count += 1
 
     model = ResidualCNN(input_dim=(7,7,7), filters=24)
+

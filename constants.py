@@ -8,4 +8,9 @@ NUM_DIRECTIONS = 6
 BOARD_WIDTH = BOARD_HEIGHT = ROWS_OF_CHECKERS * 2 + 1
 NUM_HIST_MOVES = 3      # Number of history moves to keep
 
+PROGRESS_MOVE_LIMIT = 50
 TYPES_OF_PLAYERS = ['h', 'g', 'a']
+TREE_TAU = 1
+REWARD = {"lose" : -1, "draw" : 0, "win" : 1}
+C_PUCT = 1
+SIMULATION_ITR_NUM = 100
