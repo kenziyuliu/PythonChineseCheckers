@@ -24,7 +24,6 @@ class HumanPlayer:
         # First print game info
         os.system('clear')
         board.visualise(cur_player=self.player_num)
-        print ("Player {}'s progress: {}".format(self.player_num, board.player_progress(self.player_num)))
 
         valid_moves = board.get_valid_moves(self.player_num)
         human_valid_moves = board_utils.convert_np_to_human_moves(valid_moves)
