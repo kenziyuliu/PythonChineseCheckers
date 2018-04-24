@@ -90,7 +90,7 @@ class Model:
         # get opponent player
         op_player = PLAYER_ONE + PLAYER_TWO - cur_player
 
-        # firstly, construct the current state
+        # firstly, construct the current state layers
         op_layer = np.copy(new_board[:, :, 0])
         cur_layer = np.copy(new_board[:, :, 0])
         # construct layer for current player
@@ -111,17 +111,18 @@ class Model:
         for channel in range(1, NUM_HIST_MOVES):
             if not np.any(new_board[:, :, channel]): # timestep < 0
                 break
-            dist_pos = moves[hist_index]
-            orig_pos = moves[hist_index - 1]
+            move = moves[hist_index]
+            orig_pos = move[0]
+            dest_pos = move[1]
             if moved_player == cur_player:
-                value = cur_layer[dist_pos[0], dist_pos[1]]
-                cur_layer[dist_pos[0], dist_pos[1]] = cur_layer[orig_pos[0], orig_pos[1]]
-                cur_layer[orig_pos[0], orig_pos[1]] = value
+                value = cur_layer[dest_pos]
+                cur_layer[dest_pos] = cur_layer[orig_pos]
+                cur_layer[orig_pos] = value
             else:
-                value = op_layer[dist_pos[0], dist_pos[1]]
-                op_layer[dist_pos[0], dist_pos[1]] = op_layer[orig_pos[0], orig_pos[1]]
-                op_layer[orig_pos[0], orig_pos[1]] = value
-            hist_index -= 2
+                value = op_layer[dest_pos]
+                op_layer[dest_pos] = op_layer[orig_pos]
+                op_layer[orig_pos] = value
+            hist_index -= 1
             moved_player = PLAYER_ONE + PLAYER_TWO - moved_player
             model_input[:, :, channel * 2] = np.copy(cur_layer)
             model_input[:, :, channel * 2 + 1] = np.copy(op_layer)

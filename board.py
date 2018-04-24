@@ -198,10 +198,9 @@ class Board:
 
         # Update history
         self.board = np.concatenate((np.expand_dims(cur_board, axis=2), self.board[:, :, :NUM_HIST_MOVES - 1]), axis=2)
-        if len(self.hist_moves) == (NUM_HIST_MOVES-1)*2:
-            self.hist_moves = self.hist_moves [2:]
-        self.hist_moves.append(origin_pos)
-        self.hist_moves.append(dest_pos)
+        if len(self.hist_moves) == (NUM_HIST_MOVES-1):
+            self.hist_moves = self.hist_moves [1:]
+        self.hist_moves.append((origin_pos,dest_pos))
         return self.check_win()
 
     def player_progress(self, player_id):
