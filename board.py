@@ -196,8 +196,8 @@ class Board:
 
         # Update history
         self.board = np.concatenate((np.expand_dims(cur_board, axis=2), self.board[:, :, :NUM_HIST_MOVES - 1]), axis=2)
-
         return self.check_win()
+
 
     def player_progress(self, player_id):
         """
@@ -207,11 +207,12 @@ class Board:
         diag_sign = player_id if player_id == PLAYER_ONE else -1
         reached_checkers_num = 0
         for k in range(BOARD_WIDTH - ROWS_OF_CHECKERS, BOARD_WIDTH):
-                diag = cur_board.diagonal(diag_sign * k)
-                for i in diag:
-                    if i == player_id:
-                        reached_checkers_num += 1;
+            diag = cur_board.diagonal(diag_sign * k)
+            for i in diag:
+                if i == player_id:
+                    reached_checkers_num += 1;
         return reached_checkers_num
+
 
 if __name__ == '__main__':
     """
