@@ -73,10 +73,14 @@ def preprocess_training_data(self_play_games):
         history, winner = game
         curr_player = PLAYER_ONE
         for board, pi in history:
+            board.visualise()
+            print(winner)
             board_x.append(Model.to_model_input(board, curr_player))
+
             pi_y.append(pi)
-            if winner == 0:
-                v_y.append(0)
+            if winner < 1:
+                v_y.append(winner)
+                winner = - winner
             elif winner == curr_player:
                 v_y.append(1)
             else:
@@ -93,6 +97,3 @@ if __name__ == '__main__':
     if len(sys.argv) != 1:
         model.load(sys.argv[1])
     evolve(model)
-
-
-

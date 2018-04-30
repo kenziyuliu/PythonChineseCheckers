@@ -133,8 +133,9 @@ class MCTS:
 
             if num_useless_moves >= PROGRESS_MOVE_LIMIT or self.root.state.check_win():
                 break
+        return actual_play_history, self.root.state.check_result()
 
-        return actual_play_history, self.root.state.check_win()
+
 
 
     def search(self):
@@ -173,8 +174,3 @@ if __name__ == '__main__':
     tree = MCTS(node, model)
     for state, pi in tree.selfPlay()[0]:
         state.visualise()
-
-
-
-
-

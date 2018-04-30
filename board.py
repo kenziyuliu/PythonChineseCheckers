@@ -224,6 +224,19 @@ class Board:
         return reached_checkers_num
 
 
+    def check_result (self):
+        """
+        return the reward for player one
+        """
+        if self.check_win() != 0:
+            return self.check_win()
+        player_one_progress = self.player_progress(PLAYER_ONE)
+        player_two_progress = self.player_progress(PLAYER_TWO)
+        if player_one_progress == player_two_progress:
+            return 0
+        return player_one_progress/NUM_CHECKERS \
+            if player_one_progress>player_two_progress else -player_two_progress/NUM_CHECKERS
+
 if __name__ == '__main__':
     """
     Put board.py testcases here
@@ -236,7 +249,8 @@ if __name__ == '__main__':
     # print(board.board[6, 0, 0])
     # print(board.board)
     # board.print_board()
-    print(board.get_valid_moves(1))
+    # print(board.get_valid_moves(1))
     # print(board.check_win())
     # print(board.check_win())
     # for i in range(50000):
+    # board.place()
