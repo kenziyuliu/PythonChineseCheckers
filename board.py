@@ -224,19 +224,6 @@ class Board:
         return reached_checkers_num
 
 
-    def check_result (self):
-        """
-        return the reward for player one
-        """
-        if self.check_win() != 0:
-            return self.check_win()
-        player_one_progress = self.player_progress(PLAYER_ONE)
-        player_two_progress = self.player_progress(PLAYER_TWO)
-        if player_one_progress == player_two_progress:
-            return 0
-        return player_one_progress/NUM_CHECKERS \
-            if player_one_progress>player_two_progress else -player_two_progress/NUM_CHECKERS
-
 if __name__ == '__main__':
     """
     Put board.py testcases here

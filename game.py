@@ -61,7 +61,7 @@ class Game:
             if winner:
                 break
             # self.board.visualise()
-            # print(self.board.check_result())
+            # print(self.board.get_reward())
             self.swap_players()
 
 

@@ -70,21 +70,15 @@ def preprocess_training_data(self_play_games):
     pi_y = []
     v_y = []
     for game in self_play_games:
-        history, winner = game
+        history, reward = game
         curr_player = PLAYER_ONE
         for board, pi in history:
-            board.visualise()
-            print(winner)
             board_x.append(Model.to_model_input(board, curr_player))
 
             pi_y.append(pi)
-            if winner < 1:
-                v_y.append(winner)
-                winner = - winner
-            elif winner == curr_player:
-                v_y.append(1)
-            else:
-                v_y.append(-1)
+
+            v_y.append(reward)
+            reward = - reward
 
             curr_player = PLAYER_ONE + PLAYER_TWO - curr_player
 
