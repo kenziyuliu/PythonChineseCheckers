@@ -78,7 +78,7 @@ def preprocess_training_data(self_play_games):
             pi_y.append(pi)
 
             v_y.append(reward)
-            reward = - reward
+            reward = -reward
 
             curr_player = PLAYER_ONE + PLAYER_TWO - curr_player
 

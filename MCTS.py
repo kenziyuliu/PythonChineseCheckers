@@ -135,7 +135,7 @@ class MCTS:
                 break
         return actual_play_history, self.get_reward(self.root.state)
 
-    def get_reward (self, board):
+    def get_reward(self, board):
         """
         return the reward for player one
         """
@@ -148,11 +148,10 @@ class MCTS:
         player_two_progress = board.player_progress(PLAYER_TWO)
         if player_one_progress == player_two_progress:
             return 0
-        elif player_one_progress>player_two_progress:
+        elif player_one_progress > player_two_progress:
             return player_one_progress / NUM_CHECKERS
         else:
             return -player_two_progress / NUM_CHECKERS
-
 
 
     def search(self):
