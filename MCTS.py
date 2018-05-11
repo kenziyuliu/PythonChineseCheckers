@@ -149,7 +149,7 @@ class MCTS:
         player_one_distance = board.player_forward_distance(PLAYER_ONE)
         player_two_distance = board.player_forward_distance(PLAYER_TWO)
         if player_one_distance == player_two_distance:
-            return 0
+            return REWARD["draw"]
         else:
             return player_one_distance - player_two_distance
 
