@@ -234,12 +234,12 @@ class Board:
             distance = PLAYER_ONE_DISTANCE_OFFSET
             for _, pos in checkers_pos.items():
                 row, _ = board_utils.np_index_to_human_coord(pos)
-                distance += row
+                distance -= row
         else:
             distance = PLAYER_TWO_DISTANCE_OFFSET
             for _, pos in checkers_pos.items():
                 row, _ = board_utils.np_index_to_human_coord(pos)
-                distance -= row
+                distance += row
         return distance
 
 if __name__ == '__main__':
