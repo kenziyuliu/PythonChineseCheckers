@@ -1,6 +1,6 @@
 from __future__ import print_function
 import numpy as np
-from constants import *
+from config import *
 import board_utils
 import operator
 
@@ -74,6 +74,7 @@ class Board:
 
             if not one_win and not two_win:
                 return 0
+
         return PLAYER_ONE if one_win else PLAYER_TWO
 
 
@@ -188,6 +189,7 @@ class Board:
         """
         Makes a move with array indices
         """
+        # Make copy and make move
         cur_board = np.copy(self.board[:, :, 0])
         cur_board[origin_pos], cur_board[dest_pos] = cur_board[dest_pos], cur_board[origin_pos]
 
@@ -195,6 +197,7 @@ class Board:
         for checker_id, checker_pos in self.checkers_pos[cur_player].items():
             if checker_pos == origin_pos:
                 self.checkers_pos[cur_player][checker_id] = dest_pos
+                break
 
         self.checkers_id[cur_player][dest_pos] = self.checkers_id[cur_player].pop(origin_pos)
 
@@ -202,8 +205,9 @@ class Board:
         self.board = np.concatenate((np.expand_dims(cur_board, axis=2), self.board[:, :, :NUM_HIST_MOVES - 1]), axis=2)
 
         # Record history moves
-        if len(self.hist_moves) == (NUM_HIST_MOVES - 1):
-            self.hist_moves = self.hist_moves [1:]
+        if len(self.hist_moves) == NUM_HIST_MOVES:
+            self.hist_moves = self.hist_moves[1:]
+
         self.hist_moves.append((origin_pos,dest_pos))
 
         return self.check_win()

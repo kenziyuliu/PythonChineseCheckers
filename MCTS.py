@@ -5,7 +5,7 @@ import numpy as np
 
 import board
 from model import *
-from constants import *
+from config import *
 
 
 class Node:
@@ -49,7 +49,7 @@ class MCTS:
         currentNode = self.root
 
         while not currentNode.isLeaf():
-            maxQU = float("-inf");
+            maxQU = float('-inf')
             chosen_edges = []
             N_sum = 0
 
@@ -57,8 +57,9 @@ class MCTS:
                 N_sum += edge.stats['N']
 
             for edge in currentNode.edges:
-                U = self.cpuct * edge.stats['P'] * math.sqrt(N_sum) / (1 + edge.stats['N'])
+                U = self.cpuct * edge.stats['P'] * np.sqrt(N_sum) / (1. + edge.stats['N'])
                 QU = edge.stats['Q'] + U
+
                 if QU > maxQU:
                     maxQU = QU
                     chosen_edges = [edge]
@@ -74,16 +75,17 @@ class MCTS:
 
 
     def expandAndBackUp(self, leafNode, breadcrumbs):
-
         winner = leafNode.state.check_win()
         if winner:
+            print('Tree Search reached a win state')
             for edge in breadcrumbs:
                 direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
                 edge.stats['N'] += 1
                 edge.stats['W'] += REWARD["win"] * direction
-                edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
+                edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N'])  # Use float() for python2 compatibility
             return
 
+        # Use model to make prediction at a leaf node
         p_evaluated, v_evaluated = self.model.predict(Model.to_model_input(leafNode.state, leafNode.currPlayer))
         p_evaluated = p_evaluated.squeeze()
 
@@ -103,11 +105,12 @@ class MCTS:
                 newEdge = Edge(leafNode, newNode, p_evaluated[prior_index], checker_pos, destination_pos)
                 leafNode.edges.append(newEdge)
 
+        # Back up the value
         for edge in breadcrumbs:
             direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
             edge.stats['N'] += 1
             edge.stats['W'] += v_evaluated * direction
-            edge.stats['Q'] = edge.stats['W'] / edge.stats['N']
+            edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N']) # Use float() for python2 compatibility
 
 
     def selfPlay(self):
@@ -117,12 +120,23 @@ class MCTS:
         actual_play_history = []
 
         while True:
-            # Decide next move
+            # Before deciding next move, expand from the current state (which must be leaf/root)
+            # and add Dirichlet noise to prior probs at the root to ensure all moves may be tried
+            assert self.root.isLeaf()
+            self.expandAndBackUp(self.root, breadcrumbs=[])     # Because root doesn't have path back to root
+            dirichlet_noise = np.random.dirichlet(np.ones(len(self.root.edges)) * DIRICHLET_ALPHA)
+            for i in range(len(self.root.edges)):
+                self.root.edges[i].stats['P'] *= (1. - DIR_NOISE_FACTOR)
+                self.root.edges[i].stats['P'] += DIR_NOISE_FACTOR * dirichlet_noise[i]
+
+            # Decide next move from the root with 1 level of prior probability
             pi, sampled_edge = self.search()
             actual_play_history.append((self.root.state, pi))
 
             # Move to next board state
             self.root = sampled_edge.outNode
+            # Clear the tree from this node before each actual move
+            self.root.edges.clear()
 
             # Evaluate player progress for stopping
             progress_evaluated = self.root.state.player_progress(player_turn + 1)
@@ -135,10 +149,16 @@ class MCTS:
             # Change player
             player_turn = 1 - player_turn
 
+            # Change TREE_TAU to very small if game has certain progress
+            if len(actual_play_history) > PROGRESS_MOVE_LIMIT:
+                TREE_TAU = EPSILON
+
             # Stop if the game is nonsense or someone wins
             if num_useless_moves >= PROGRESS_MOVE_LIMIT or self.root.state.check_win():
                 break
-
+                
+        # Restore tree tau
+        TREE_TAU = 1
         return actual_play_history, self.get_reward(self.root.state)
 
 
@@ -155,23 +175,25 @@ class MCTS:
         player_one_distance = board.player_forward_distance(PLAYER_ONE)
         player_two_distance = board.player_forward_distance(PLAYER_TWO)
 
-        if player_one_distance == player_two_distance:
+        if abs(player_one_distance - player_two_distance) < DIST_THRES_FOR_REWARD:
             return REWARD["draw"]
-        else:
-            return player_one_distance - player_two_distance
+
+        return 1 if (player_one_distance - player_two_distance >= DIST_THRES_FOR_REWARD) else -1
 
 
     def search(self):
+        # Build Monte Carlo tree from root using lots of simulations
         for i in range(self.num_itr):
             leafNode, breadcrumbs = self.moveToLeaf()
             self.expandAndBackUp(leafNode, breadcrumbs)
 
+        # Calculat PI and sample an edge
         chosen_edges = []
-        maxN = float("-inf")
+        maxN = float('-inf')
         sumPi = 0
 
         for edge in self.root.edges:
-            probability = edge.stats['N'] ** (1/TREE_TAU)
+            probability = pow(edge.stats['N'], (1. / TREE_TAU))
             checker_id = self.root.state.checkers_id[self.root.currPlayer][edge.fromPos]
             neural_net_index = Model.encode_checker_index(checker_id, edge.toPos)
             self.root.pi[neural_net_index] = probability
@@ -185,6 +207,7 @@ class MCTS:
 
         self.root.pi /= sumPi
         sampled_edge = random.choice(chosen_edges)
+
         return self.root.pi, sampled_edge
 
 

@@ -1,4 +1,4 @@
-from constants import *
+from config import *
 from keras import regularizers
 
 ''' Model '''
@@ -7,7 +7,7 @@ INPUT_DIM = (BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES * 2 + 1)
 # default number of filters for conv layers
 NUM_FILTERS = 64
 # number of residual blocks in the model
-NUM_RESIDUAL_BLOCKS = 20
+NUM_RESIDUAL_BLOCKS = 6
 
 ''' Training '''
 # Training batch size

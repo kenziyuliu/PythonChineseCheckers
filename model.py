@@ -7,9 +7,8 @@ from keras.models import Model as KerasModel
 from keras.layers import Input, Conv2D, Flatten, Dense, BatchNormalization, LeakyReLU, add
 
 from board import *
-from constants import *
+from config import *
 from loss import softmax_cross_entropy_with_logits
-import model_configs
 
 
 class Model:
@@ -94,7 +93,7 @@ class Model:
             7 x 7 x 7. First 3 channel is player 1, next 3 channel is player 2, last channel is all 0 if player 1 is to play.
         """
         # initialise the model input
-        model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES * 2 + 1), dtype="uint8") # may change dtype afterwards
+        model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES * 2 + 1), dtype="float64") # may change dtype afterwards
         # get np array board
         new_board = board.board
         # get history moves
@@ -126,6 +125,7 @@ class Model:
             move = moves[hist_index]
             orig_pos = move[0]
             dest_pos = move[1]
+
             if moved_player == cur_player:
                 value = cur_layer[dest_pos]
                 cur_layer[dest_pos] = cur_layer[orig_pos]
@@ -134,13 +134,14 @@ class Model:
                 value = op_layer[dest_pos]
                 op_layer[dest_pos] = op_layer[orig_pos]
                 op_layer[orig_pos] = value
+
             hist_index -= 1
             moved_player = PLAYER_ONE + PLAYER_TWO - moved_player
             model_input[:, :, channel * 2] = np.copy(cur_layer)
             model_input[:, :, channel * 2 + 1] = np.copy(op_layer)
 
-        if cur_player == 2: # player 2 to play
-            model_input[:, :, NUM_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT), dtype="uint8")
+        if cur_player == PLAYER_TWO: # player 2 to play
+            model_input[:, :, NUM_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT), dtype="float64")
 
         return model_input
 
@@ -169,25 +170,25 @@ class Model:
 
 
 class ResidualCNN(Model):
-    def __init__(self, input_dim=model_configs.INPUT_DIM, filters=model_configs.NUM_FILTERS):
+    def __init__(self, input_dim=INPUT_DIM, filters=NUM_FILTERS):
         Model.__init__(self, input_dim, filters)
         self.model = self.build_model()
 
 
     def build_model(self):
         main_input = Input(shape=self.input_dim)
-        x = self.conv_block(main_input, self.filters, 3, model_configs.REGULARIZER)
+        x = self.conv_block(main_input, self.filters, 3, REGULARIZER)
 
-        for _ in range(model_configs.NUM_RESIDUAL_BLOCKS):
-            x = self.residual_block(x, self.filters, 3, model_configs.REGULARIZER)
+        for _ in range(NUM_RESIDUAL_BLOCKS):
+            x = self.residual_block(x, self.filters, 3, REGULARIZER)
 
-        value = self.value_head(x, model_configs.REGULARIZER)
-        policy = self.policy_head(x, model_configs.REGULARIZER)
+        value = self.value_head(x, REGULARIZER)
+        policy = self.policy_head(x, REGULARIZER)
 
         model = KerasModel(inputs=[main_input], outputs=[policy, value])
         model.compile(loss={"value_head":"mean_squared_error", "policy_head":softmax_cross_entropy_with_logits},
-                        optimizer=Adam(lr=model_configs.LEARNING_RATE),
-                        loss_weights={"value_head": 0.5, "policy_head": 0.5})
+                        optimizer=Adam(lr=LEARNING_RATE),
+                        loss_weights={"value_head": 1., "policy_head": 1.})
         return model
 
 
