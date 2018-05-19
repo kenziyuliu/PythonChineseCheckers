@@ -5,8 +5,7 @@ import datetime
 import threading
 import multiprocessing as mp
 
-from constants import *
-from model_configs import *
+from config import *
 from model import *
 from MCTS import *
 
@@ -26,9 +25,9 @@ ITERATION_COUNT = 0
 def generate_self_play(worker_id, model_path, num_self_play):
     # Load the current model in the worker only for prediction and set GPU limit
     import tensorflow as tf
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    session = tf.Session(config=config)
+    tf_config = tf.ConfigProto()
+    tf_config.gpu_options.allow_growth = True
+    session = tf.Session(config=tf_config)
 
     from keras.backend.tensorflow_backend import set_session
     set_session(session=session)
@@ -86,9 +85,9 @@ def generate_self_play_in_parallel(model_path, num_self_play, num_workers):
 def train(model_path, board_x, pi_y, v_y, iter_count):
     # Set TF gpu limit
     import tensorflow as tf
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    session = tf.Session(config=config)
+    tf_config = tf.ConfigProto()
+    tf_config.gpu_options.allow_growth = True
+    session = tf.Session(config=tf_config)
 
     from keras.backend.tensorflow_backend import set_session
     set_session(session=session)
@@ -104,7 +103,12 @@ def train(model_path, board_x, pi_y, v_y, iter_count):
     if model_path is not None:
         cur_model.load(model_path)
 
-    cur_model.model.fit(board_x, [pi_y, v_y], batch_size=BATCH_SIZE, epochs=EPOCHS)
+    cur_model.model.fit(board_x, [pi_y, v_y],
+        batch_size=BATCH_SIZE,
+        epochs=EPOCHS,
+        shuffle=True,
+        validation_split=(1. - TRAIN_DATA_RETENTION))
+
     cur_model.save(SAVE_MODELS_DIR, iter_count)
 
 
@@ -117,6 +121,13 @@ def evolve(cur_model_path):
 
         training_data = generate_self_play_in_parallel(cur_model_path, NUM_SELF_PLAY, NUM_WORKERS)
         board_x, pi_y, v_y = preprocess_training_data(training_data)
+
+        # NOTE: The following code can be used to sample training data
+        # # Sample a portion of training data
+        # sampled_idx = np.random.choice(len(board_x), int(TRAIN_DATA_RETENTION * len(board_x)), replace=False)
+        # board_x = board_x[sampled_idx]
+        # pi_y = pi_y[sampled_idx]
+        # v_y = v_y[sampled_idx]
 
         # Use a *new process* to train since we DONT want to load TF in the parent process
         training_process = mp.Process(target=train, args=(cur_model_path, board_x, pi_y, v_y, ITERATION_COUNT))
@@ -145,7 +156,32 @@ def preprocess_training_data(self_play_games):
             reward = -reward
             curr_player = PLAYER_ONE + PLAYER_TWO - curr_player
 
-    return np.array(board_x), np.array(pi_y), np.array(v_y)
+    # Augment training data by horizontal flipping
+    board_x, pi_y, v_y = augment_training_data(board_x, pi_y, v_y)
+
+    return np.array(board_x, copy=True), np.array(pi_y, copy=True), np.array(v_y, copy=True)
+
+
+
+def augment_training_data(board_x, pi_y, v_y):
+    new_board_x = []
+    new_pi_y = []
+    new_v_y = []
+
+    for i in range(len(board_x)):
+        new_board = np.copy(board_x[i])
+        new_pi = np.copy(pi_y[i])
+        new_v = v_y[i]
+
+        # Flip the board along the other diagonal, in the last dimension
+        for j in range(new_board.shape[-1]):
+            new_board[:, :, j] = np.fliplr(np.rot90(new_board[:, :, j]))
+
+        new_board_x.append(new_board)
+        new_pi_y.append(new_pi)
+        new_v_y.append(new_v)
+
+    return new_board_x + board_x, new_pi_y + pi_y, new_v_y + v_y
 
 
 
@@ -159,6 +195,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 1:
         model_path = sys.argv[1]
         try:
+            # Read the count from file name
             ITERATION_COUNT = int(re.search('version(.+?)\.h5', model_path).group(1)) + 1
         except:
             ITERATION_COUNT = 0
