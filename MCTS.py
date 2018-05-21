@@ -1,3 +1,4 @@
+import gc
 import math
 import copy
 import random
@@ -36,12 +37,13 @@ class Edge:
 
 
 class MCTS:
-    def __init__(self, root, model, cpuct=C_PUCT, num_itr=MCTS_SIMULATIONS):
+    def __init__(self, root, model, cpuct=C_PUCT, num_itr=MCTS_SIMULATIONS, tree_tau=TREE_TAU):
         self.root = root
         self.tree = {}
         self.cpuct = cpuct
         self.num_itr = num_itr
         self.model = model
+        self.tree_tau = tree_tau
 
 
     def moveToLeaf(self):
@@ -138,6 +140,17 @@ class MCTS:
             # Clear the tree from this node before each actual move
             self.root.edges.clear()
 
+            # Collect garbage
+            gc.collect()
+
+            # Determine repetitions for stopping: can't use slicing since `hist_moves` is a deque
+            cur_player_hist_moves = [move for i, move in enumerate(self.root.state.hist_moves) if i % 2 == 0]
+            history_dests = set([move[1] for move in cur_player_hist_moves])
+
+            # If limited destinations exist in the past moves, then there is some kind of repetition
+            if (len(cur_player_hist_moves) * 2) >= TOTAL_HIST_MOVES and len(history_dests) <= UNIQUE_DEST_LIMIT:
+                break
+
             # Evaluate player progress for stopping
             progress_evaluated = self.root.state.player_progress(player_turn + 1)
             if progress_evaluated > player_progresses[player_turn]:
@@ -149,16 +162,21 @@ class MCTS:
             # Change player
             player_turn = 1 - player_turn
 
-            # Change TREE_TAU to very small if game has certain progress
-            if len(actual_play_history) > PROGRESS_MOVE_LIMIT:
-                TREE_TAU = EPSILON
+            # Change TREE_TAU to very small if game has certain progress so actions are deterministic
+            if len(actual_play_history) > TOTAL_MOVES_TILL_TAU0:
+                self.tree_tau = 0.01
 
             # Stop if the game is nonsense or someone wins
             if num_useless_moves >= PROGRESS_MOVE_LIMIT or self.root.state.check_win():
+                print('============================================')
+                print('Game stopped by reaching progress move limit')
+                print('============================================')
                 break
-                
+
+        # Collect garbage
+        gc.collect()
         # Restore tree tau
-        TREE_TAU = 1
+        self.tree_tau = TREE_TAU
         return actual_play_history, self.get_reward(self.root.state)
 
 
@@ -175,7 +193,7 @@ class MCTS:
         player_one_distance = board.player_forward_distance(PLAYER_ONE)
         player_two_distance = board.player_forward_distance(PLAYER_TWO)
 
-        if abs(player_one_distance - player_two_distance) < DIST_THRES_FOR_REWARD:
+        if abs(player_one_distance - player_two_distance) <= DIST_THRES_FOR_REWARD:
             return REWARD["draw"]
 
         return 1 if (player_one_distance - player_two_distance >= DIST_THRES_FOR_REWARD) else -1
@@ -190,23 +208,28 @@ class MCTS:
         # Calculat PI and sample an edge
         chosen_edges = []
         maxN = float('-inf')
-        sumPi = 0
 
         for edge in self.root.edges:
-            probability = pow(edge.stats['N'], (1. / TREE_TAU))
+            probability = pow(edge.stats['N'], (1. / self.tree_tau))
             checker_id = self.root.state.checkers_id[self.root.currPlayer][edge.fromPos]
             neural_net_index = Model.encode_checker_index(checker_id, edge.toPos)
             self.root.pi[neural_net_index] = probability
-            sumPi += probability
 
-            if probability > maxN:
-                maxN = probability
-                chosen_edges = [edge]
-            elif math.fabs(probability - maxN) < EPSILON:
-                chosen_edges.append(edge)
+        self.root.pi /= np.sum(self.root.pi)
 
-        self.root.pi /= sumPi
-        sampled_edge = random.choice(chosen_edges)
+        # Sample an action with given probablities
+        sampled_index = np.random.choice(np.arange(len(self.root.pi)), p=self.root.pi)
+        sampled_checker_id, sampled_to = Model.decode_checker_index(sampled_index)
+        sampled_from = self.root.state.checkers_pos[self.root.currPlayer][sampled_checker_id]
+
+        # Get the edge corresponding to the sampled action
+        sampled_edge = None
+        for edge in self.root.edges:
+            if edge.fromPos == sampled_from and edge.toPos == sampled_to:
+                sampled_edge = edge
+                break
+
+        assert sampled_edge != None
 
         return self.root.pi, sampled_edge
 

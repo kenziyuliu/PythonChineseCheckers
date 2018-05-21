@@ -93,11 +93,11 @@ class Model:
             7 x 7 x 7. First 3 channel is player 1, next 3 channel is player 2, last channel is all 0 if player 1 is to play.
         """
         # initialise the model input
-        model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES * 2 + 1), dtype="float64") # may change dtype afterwards
+        model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 2 + 1), dtype="float64") # may change dtype afterwards
         # get np array board
         new_board = board.board
         # get history moves
-        moves = board.hist_moves
+        hist_moves = board.hist_moves
         # get opponent player
         op_player = PLAYER_ONE + PLAYER_TWO - cur_player
 
@@ -118,11 +118,11 @@ class Model:
 
         # construct the latter layers
         moved_player = op_player
-        hist_index = len(moves) - 1
-        for channel in range(1, NUM_HIST_MOVES):
+        hist_index = len(hist_moves) - 1
+        for channel in range(1, BOARD_HIST_MOVES):
             if not np.any(new_board[:, :, channel]): # timestep < 0
                 break
-            move = moves[hist_index]
+            move = hist_moves[hist_index]
             orig_pos = move[0]
             dest_pos = move[1]
 
@@ -141,7 +141,7 @@ class Model:
             model_input[:, :, channel * 2 + 1] = np.copy(op_layer)
 
         if cur_player == PLAYER_TWO: # player 2 to play
-            model_input[:, :, NUM_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT), dtype="float64")
+            model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT))
 
         return model_input
 

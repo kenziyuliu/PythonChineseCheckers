@@ -1,3 +1,4 @@
+import re
 from game import Game
 from config import *
 import sys

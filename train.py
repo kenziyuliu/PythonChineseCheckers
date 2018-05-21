@@ -157,9 +157,9 @@ def preprocess_training_data(self_play_games):
             curr_player = PLAYER_ONE + PLAYER_TWO - curr_player
 
     # Augment training data by horizontal flipping
-    board_x, pi_y, v_y = augment_training_data(board_x, pi_y, v_y)
+    augment_training_data(board_x, pi_y, v_y)
 
-    return np.array(board_x, copy=True), np.array(pi_y, copy=True), np.array(v_y, copy=True)
+    return np.array(board_x), np.array(pi_y), np.array(v_y)
 
 
 
@@ -181,8 +181,9 @@ def augment_training_data(board_x, pi_y, v_y):
         new_pi_y.append(new_pi)
         new_v_y.append(new_v)
 
-    return new_board_x + board_x, new_pi_y + pi_y, new_v_y + v_y
-
+    board_x += new_board_x
+    pi_y += new_pi_y
+    v_y += new_v_y
 
 
 def get_path_from_version(path_pref, version):

@@ -3,6 +3,7 @@ import numpy as np
 from config import *
 import board_utils
 import operator
+from collections import deque
 
 
 class Board:
@@ -15,7 +16,7 @@ class Board:
         PLAYER_ONE and PLAYER_TWO's checkers are initialised
         at bottom left and top right corners respectively.
         """
-        self.board = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, NUM_HIST_MOVES), dtype='uint8')  # Initialize empty board
+        self.board = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES), dtype='uint8')  # Initialize empty board
         self.board[:, :, 0] = np.array([[0, 0, 0, 0, 2, 2, 2],
                                         [0, 0, 0, 0, 0, 2, 2],
                                         [0, 0, 0, 0, 0, 0, 2],
@@ -50,7 +51,7 @@ class Board:
                             {(0, BOARD_WIDTH-1): 0, (1, BOARD_WIDTH-1): 1, (0, BOARD_WIDTH-2): 2,
                              (2, BOARD_WIDTH-1): 3, (1, BOARD_WIDTH-2): 4, (0, BOARD_WIDTH-3): 5}]
 
-        self.hist_moves = []
+        self.hist_moves = deque()
 
 
     def check_win(self):
@@ -202,11 +203,12 @@ class Board:
         self.checkers_id[cur_player][dest_pos] = self.checkers_id[cur_player].pop(origin_pos)
 
         # Update history
-        self.board = np.concatenate((np.expand_dims(cur_board, axis=2), self.board[:, :, :NUM_HIST_MOVES - 1]), axis=2)
+        self.board = np.concatenate((np.expand_dims(cur_board, axis=2), self.board[:, :, :BOARD_HIST_MOVES - 1]), axis=2)
 
         # Record history moves
-        if len(self.hist_moves) == NUM_HIST_MOVES:
-            self.hist_moves = self.hist_moves[1:]
+        if len(self.hist_moves) == TOTAL_HIST_MOVES:
+            # self.hist_moves = self.hist_moves[1:]
+            self.hist_moves.popleft()
 
         self.hist_moves.append((origin_pos,dest_pos))
 
@@ -257,7 +259,7 @@ if __name__ == '__main__':
 
     # print(board.board[board.checker_pos[PLAYER_ONE][0][0],
     # board.checker_pos[PLAYER_ONE][0][1], 0])
-
+    #
     # print(board.board[6, 0, 0])
     # print(board.board)
     # board.print_board()
