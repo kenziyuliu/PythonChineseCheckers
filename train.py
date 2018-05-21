@@ -191,6 +191,11 @@ def get_path_from_version(path_pref, version):
 
 
 
+def get_path_from_version(path_pref, version):
+    return path_pref + '/version{:0>4}.h5'.format(version)
+
+
+
 if __name__ == '__main__':
     model_path = None
     if len(sys.argv) != 1:
