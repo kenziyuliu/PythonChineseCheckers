@@ -17,16 +17,15 @@ PLAYER_TWO_DISTANCE_OFFSET = -14
 TOTAL_HIST_MOVES = 16                       # Total number of history moves to keep for checking repetitions
 UNIQUE_DEST_LIMIT = 3
 
-
 ''' MCTS and RL '''
 PROGRESS_MOVE_LIMIT = 100
 TREE_TAU = 1
 REWARD = {"lose" : -10, "draw" : 0, "win" : 10}
-C_PUCT = 2
-MCTS_SIMULATIONS = 125
+C_PUCT = 1
+MCTS_SIMULATIONS = 120
 EPSILON = 1e-5
-DIST_THRES_FOR_REWARD = 1                   # Threshold for reward for player forward distance difference
-TOTAL_MOVES_TILL_TAU0 = 40
+DIST_THRES_FOR_REWARD = 3                   # Threshold for reward for player forward distance difference
+TOTAL_MOVES_TILL_TAU0 = 24
 
 ''' Dirichlet Noise '''
 DIRICHLET_ALPHA = 0.03                      # Alpha for ~ Dir(), assuming symmetric Dirichlet distribution
@@ -40,11 +39,15 @@ NUM_RESIDUAL_BLOCKS = 16                    # Number of residual blocks in the m
 
 ''' Train '''
 SAVE_MODELS_DIR = 'saved-models/'
+MODEL_PREFIX = 'version'
+SAVE_TRAIN_DATA_DIR = 'generated-training-data/'
+SAVE_TRAIN_DATA_PREF = 'data-for-iter-'
+PAST_ITER_COUNT = 3                         # Number of past iterations to use
 NUM_WORKERS = 12                            # For generating self plays in parallel
-NUM_SELF_PLAY = 48                          # Total number of self plays to generate
-TRAIN_DATA_RETENTION = 1.0                  # Percentage of training data to keep when sampling
+NUM_SELF_PLAY = 60                          # Total number of self plays to generate
+DEF_DATA_RETENTION_RATE = 0.5              # Default percentage of training data to keep when sampling
 BATCH_SIZE = 32
-REG_CONST = 1e-4                            # Weight decay constant (l1/l2 regularizer)
+REG_CONST = 6e-5                            # Weight decay constant (l1/l2 regularizer)
 LEARNING_RATE = 0.001                       # Traning learning rate
 REGULARIZER = regularizers.l2(REG_CONST)    # Default kernal regularizer
 EPOCHS = 20                                 # Training Epochs

@@ -4,6 +4,7 @@ import copy
 import random
 import numpy as np
 
+import utils
 import board
 from model import *
 from config import *
@@ -79,7 +80,7 @@ class MCTS:
     def expandAndBackUp(self, leafNode, breadcrumbs):
         winner = leafNode.state.check_win()
         if winner:
-            print('Tree Search reached a win state')
+            utils.stress_message('Tree Search reached a win state')
             for edge in breadcrumbs:
                 direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
                 edge.stats['N'] += 1
@@ -167,10 +168,12 @@ class MCTS:
                 self.tree_tau = 0.01
 
             # Stop if the game is nonsense or someone wins
-            if num_useless_moves >= PROGRESS_MOVE_LIMIT or self.root.state.check_win():
-                print('============================================')
-                print('Game stopped by reaching progress move limit')
-                print('============================================')
+            if num_useless_moves >= PROGRESS_MOVE_LIMIT:
+                utils.stress_message('Game stopped by reaching progress move limit')
+                break
+
+            if self.root.state.check_win():
+                utils.stress_message('END GAME REACHED')
                 break
 
         # Collect garbage
