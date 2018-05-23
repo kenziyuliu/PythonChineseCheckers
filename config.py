@@ -54,6 +54,8 @@ EPOCHS = 20                                 # Training Epochs
 
 ''' Greedy Data Generator '''
 THRESHOLD_FOR_RANDOMIZATION = 2
+AVERAGE_TOTAL_MOVE = 43
+STUCK_TIME_LIMIT = 5
 
 
 

@@ -21,7 +21,7 @@ class GreedyDataGenerator:
                 for col in range(BOARD_HEIGHT):
                     position_list.append((row, col))
 
-            chosen_indexes = np.random.choice(np.arange(len(position_list)), size=NUM_CHECKERS*2,replace=False)
+            chosen_indexes = np.random.choice(len(position_list), size=NUM_CHECKERS*2,replace=False)
             chosen_position = []
 
             for chosen_index in chosen_indexes:
@@ -30,7 +30,7 @@ class GreedyDataGenerator:
             self.board.checkers_pos = [None, {}, {}]
             self.board.checkers_id = [None, {}, {}]
             index = 0
-            for player_num in range(PLAYER_ONE, PLAYER_TWO+1):
+            for player_num in [PLAYER_ONE, PLAYER_TWO]:
                 for checker_id in range(NUM_CHECKERS):
                     self.board.board[chosen_position[index][0], chosen_position[index][1], 0] = player_num
                     self.board.checkers_pos[player_num][checker_id] = chosen_position[index]
@@ -40,11 +40,10 @@ class GreedyDataGenerator:
     def swap_players(self):
         self.cur_player, self.next_player = self.next_player, self.cur_player
 
-    def selfPlay(self):
+    def self_play(self):
         play_history = []
         final_winner = None
         count = 0
-        stucked = False
         start_time = datetime.now()
         while True:
             best_moves = self.cur_player.decide_move(self.board, verbose=False, training=True)
@@ -74,15 +73,12 @@ class GreedyDataGenerator:
 
             count += 1
 
-            if (datetime.now() - start_time).seconds >= 5:
-                stucked = True
-                break
-        if stucked:
-            return play_history[0:43], 0
+            if (datetime.now() - start_time).seconds >= STUCK_TIME_LIMIT:
+                return play_history[0:AVERAGE_TOTAL_MOVE], REWARD['draw']
 
         return play_history, final_winner
 
 if __name__ == "__main__":
     for i in range(200):
         generator = GreedyDataGenerator(randomize=True)
-        print(len(generator.selfPlay()[0]))
+        print(len(generator.self_play()[0]))
