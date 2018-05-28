@@ -68,8 +68,6 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
 
 
 def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model2_path=None):
-    # print ('model2_path is {} in generate_self_play_in_parallel()'.format(model2_path))
-
     # Process pool for parallelism
     process_pool = mp.Pool(processes=num_workers)
     work_share = num_self_play // num_workers
