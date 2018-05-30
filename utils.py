@@ -29,5 +29,6 @@ def deepsizeof(obj, visited):
 
     return r
 
+
 def find_version_given_filename(filename):
     return int(re.search('{}(.+?)\.h5'.format(MODEL_PREFIX), filename).group(1))

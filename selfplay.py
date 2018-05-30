@@ -55,6 +55,7 @@ def selfplay(model1, model2):
         if root.state.check_win():
             utils.stress_message('END GAME REACHED')
             break
+
     return play_history, get_reward(root.state)
 
 
@@ -76,6 +77,7 @@ def make_move(root, model, tree_tau, play_history):
     play_history.append((tree.root.state, pi))
     outNode = sampled_edge.outNode
     outNode.edges.clear()
+
     return outNode # root for next iteration
 
 
