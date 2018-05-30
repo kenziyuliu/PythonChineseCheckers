@@ -10,7 +10,7 @@ import utils
 from config import *
 from model import *
 from MCTS import *
-from selfplay import selfPlay
+from selfplay import selfplay
 
 """
 This file coordinates training procedure, including:
@@ -59,7 +59,7 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
     # Worker start generating self plays according to their workload
     worker_result = []
     for i in range(num_self_play):
-        play_history, outcome = selfPlay(model, model2)
+        play_history, outcome = selfplay(model, model2)
         worker_result.append((play_history, outcome))
         print('Worker {}: generated {} self-plays'.format(worker_id, len(worker_result)))
 
@@ -119,7 +119,7 @@ def train(model_path, board_x, pi_y, v_y, data_retention, version):
         cur_model.load(model_path)
 
     # Train!
-    # Sample a *different* portion of training data in each epoch
+    # Sample a portion of training data before training
     sampled_idx = np.random.choice(len(board_x), int(data_retention * len(board_x)), replace=False)
     sampled_board_x = board_x[sampled_idx]
     sampled_pi_y = pi_y[sampled_idx]
@@ -146,7 +146,7 @@ def evolve(cur_model_path):
 
         model2_path = None
         if SELF_PLAY_DIFF_MODEL and ITERATION_COUNT > 1:
-            model2_version = get_prev_model_version(ITERATION_COUNT - EPSILON)
+            model2_version = get_rand_prev_version(ITERATION_COUNT)
             model2_path = get_model_path_from_version(model2_version)
             utils.stress_message('.. and vs. Version {}'.format(model2_version))
 
@@ -266,8 +266,8 @@ def get_model_path_from_version(version):
     return '{}/{}{:0>4}.h5'.format(SAVE_MODELS_DIR, MODEL_PREFIX, version)
 
 
-def get_prev_model_version(upper):
-    return int(np.random.uniform(upper//2, upper))
+def get_rand_prev_version(upper):
+    return np.random.randint(upper//2, upper)
 
 
 

@@ -5,7 +5,7 @@ from MCTS import MCTS, Node
 from config import *
 from board import Board
 
-def selfPlay(model1, model2):
+def selfplay(model1, model2):
     if model2 is None:
         print ('model2 is None')
         model2 = model1
@@ -13,7 +13,7 @@ def selfPlay(model1, model2):
     player_progresses = [0, 0]
     player_turn = 0
     num_useless_moves = 0
-    actual_play_history = []
+    play_history = []
     tree_tau = TREE_TAU
 
     board = Board() # 1 selfplay, 1 game
@@ -21,8 +21,8 @@ def selfPlay(model1, model2):
     use_model1 = True
     while True:
         model = model1 if use_model1 else model2
-        root = make_next_move(root, model, tree_tau, actual_play_history)
-
+        root = make_move(root, model, tree_tau, play_history)
+        assert root.isLeaf()
         cur_player_hist_moves = [move for i, move in enumerate(root.state.hist_moves) if i % 2 == 0]
         history_dests = set([move[1] for move in cur_player_hist_moves])
 
@@ -44,7 +44,7 @@ def selfPlay(model1, model2):
         use_model1 = not use_model1
 
         # Change TREE_TAU to very small if game has certain progress so actions are deterministic
-        if len(actual_play_history) > TOTAL_MOVES_TILL_TAU0:
+        if len(play_history) > TOTAL_MOVES_TILL_TAU0:
             tree_tau = 0.01
 
         # Stop if the game is nonsense or someone wins
@@ -55,13 +55,13 @@ def selfPlay(model1, model2):
         if root.state.check_win():
             utils.stress_message('END GAME REACHED')
             break
-    return actual_play_history, get_reward(root.state)
+    return play_history, get_reward(root.state)
 
 
-# code inside original while loop of selfPlay()
-def make_next_move(root, model, tree_tau, actual_play_history):
-    tree = MCTS(root, model)
+# code inside original while loop of selfplay()
+def make_move(root, model, tree_tau, play_history):
     assert root.isLeaf()
+    tree = MCTS(root, model)
 
     # add Dirichlet noise to prior probs at the root to ensure all moves may be tried
     tree.expandAndBackUp(tree.root, breadcrumbs=[])     # board.place is called in the expandAndBackUp()
@@ -73,7 +73,7 @@ def make_next_move(root, model, tree_tau, actual_play_history):
         tree.root.edges[i].stats['P'] += DIR_NOISE_FACTOR * dirichlet_noise[i]
     # Decide next move from the root with 1 level of prior probability
     pi, sampled_edge = tree.search()
-    actual_play_history.append((tree.root.state, pi))
+    play_history.append((tree.root.state, pi))
     outNode = sampled_edge.outNode
     outNode.edges.clear()
     return outNode # root for next iteration

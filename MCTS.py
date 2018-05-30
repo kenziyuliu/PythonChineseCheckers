@@ -158,5 +158,5 @@ if __name__ == '__main__':
     node = Node(board, 1)
     model = ResidualCNN()
     tree = MCTS(node, model)
-    for state, pi in tree.selfPlay()[0]:
+    for state, pi in tree.selfplay()[0]:
         state.visualise()
