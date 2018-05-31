@@ -1,6 +1,8 @@
+import sys
+
+import utils
 from game import Game
 from config import *
-import sys
 from model import *
 """
 Run this file with argument specifying the model from terminal if you
@@ -15,11 +17,11 @@ if __name__ == '__main__':
         model = ResidualCNN()
         filename = sys.argv[1]
         print("\nLoading model from path {}".format(filename))
-        model.load(filename)
+        model.load_weights(filename)
         print("Model is loaded sucessfully\n")
         for i in range(1):
-            print(i, end=' ')
-            game = Game(p1_type='ai', p2_type='greedy', verbose=True, model1 = model)
+            utils.stress_message('Game {}'.format(i + 1))
+            game = Game(p1_type='ai', p2_type='greedy', verbose=True, model1=model)
             winner = game.start()
             count[winner] += 1
 

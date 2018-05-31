@@ -116,6 +116,8 @@ class AiPlayer:
         if verbose:
             board.visualise(cur_player = self.player_num)
             print('Facing the board above, Ai Version {} is thinking.'.format(self.model.version))
+            print('Tree Tau is {}'.format(tree_tau))
+
         node = Node(board, self.player_num)
 
         tree_tau = TREE_TAU
@@ -126,8 +128,7 @@ class AiPlayer:
         pi, sampled_edge = tree.search()
         if verbose:
             print('Ai Version {} moved from {} to {}\n'.format(
-                self.model.version, sampled_edge.fromPos, sampled_edge.toPos)
-            )
+                self.model.version, sampled_edge.fromPos, sampled_edge.toPos))
 
         return sampled_edge.fromPos, sampled_edge.toPos
 

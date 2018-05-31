@@ -59,7 +59,8 @@ class Game:
             move_from, move_to = self.cur_player.decide_move(self.board, verbose=self.verbose, total_moves=total_moves)    # Get move from player
             winner = self.board.place(self.cur_player.player_num, move_from, move_to)  # Make the move on board and check winner
             total_moves += 1
-            print('Total Moves: {}'.format(total_moves))
+            if self.verbose:
+                print('Total Moves: {}'.format(total_moves))
             if winner:
                 break
 

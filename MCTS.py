@@ -78,19 +78,20 @@ class MCTS:
 
 
     def expandAndBackUp(self, leafNode, breadcrumbs):
+        assert leafNode.isLeaf()
         winner = leafNode.state.check_win()
         if winner:
-            utils.stress_message('Tree Search reached a win state')
+            # utils.stress_message('Tree Search reached a win state with winner {}'.format(winner))
             for edge in breadcrumbs:
                 direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
                 edge.stats['N'] += 1
-                edge.stats['W'] += REWARD["win"] * direction
+                edge.stats['W'] += REWARD['win'] * direction
                 edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N'])  # Use float() for python2 compatibility
             return
 
         # Use model to make prediction at a leaf node
-        p_evaluated, v_evaluated = self.model.predict(Model.to_model_input(leafNode.state, leafNode.currPlayer))
-        p_evaluated = p_evaluated.squeeze()
+        p_evaluated, v_evaluated = self.model.predict(utils.to_model_input(leafNode.state, leafNode.currPlayer))
+        p_evaluated = p_evaluated.squeeze()     # Remove the extra batch dimension
 
         valid_actions = leafNode.state.get_valid_moves(leafNode.currPlayer)
 
@@ -98,7 +99,7 @@ class MCTS:
             checker_id = leafNode.state.checkers_id[leafNode.currPlayer][checker_pos]
             for destination_pos in action_set:
                 # Get index in neural net output vector
-                prior_index = Model.encode_checker_index(checker_id, destination_pos)
+                prior_index = utils.encode_checker_index(checker_id, destination_pos)
                 next_player = PLAYER_ONE + PLAYER_TWO - leafNode.currPlayer
                 # Set up new state of game
                 next_state = copy.deepcopy(leafNode.state)
@@ -129,14 +130,14 @@ class MCTS:
         for edge in self.root.edges:
             probability = pow(edge.stats['N'], (1. / self.tree_tau))
             checker_id = self.root.state.checkers_id[self.root.currPlayer][edge.fromPos]
-            neural_net_index = Model.encode_checker_index(checker_id, edge.toPos)
+            neural_net_index = utils.encode_checker_index(checker_id, edge.toPos)
             self.root.pi[neural_net_index] = probability
 
         self.root.pi /= np.sum(self.root.pi)
 
         # Sample an action with given probablities
         sampled_index = np.random.choice(np.arange(len(self.root.pi)), p=self.root.pi)
-        sampled_checker_id, sampled_to = Model.decode_checker_index(sampled_index)
+        sampled_checker_id, sampled_to = utils.decode_checker_index(sampled_index)
         sampled_from = self.root.state.checkers_pos[self.root.currPlayer][sampled_checker_id]
 
         # Get the edge corresponding to the sampled action
