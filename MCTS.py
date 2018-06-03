@@ -81,9 +81,10 @@ class MCTS:
         assert leafNode.isLeaf()
         winner = leafNode.state.check_win()
         if winner:
-            # utils.stress_message('Tree Search reached a win state with winner {}'.format(winner))
             for edge in breadcrumbs:
-                direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
+                # If a win state occurred, then then leafNode must be the turn of the lost player
+                # Therefore when backing up, the leafNode player gets negative reward
+                direction = -1 if edge.currPlayer == leafNode.currPlayer else 1
                 edge.stats['N'] += 1
                 edge.stats['W'] += REWARD['win'] * direction
                 edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N'])  # Use float() for python2 compatibility
@@ -91,7 +92,6 @@ class MCTS:
 
         # Use model to make prediction at a leaf node
         p_evaluated, v_evaluated = self.model.predict(utils.to_model_input(leafNode.state, leafNode.currPlayer))
-        p_evaluated = p_evaluated.squeeze()     # Remove the extra batch dimension
 
         valid_actions = leafNode.state.get_valid_moves(leafNode.currPlayer)
 
@@ -111,6 +111,8 @@ class MCTS:
 
         # Back up the value
         for edge in breadcrumbs:
+            # The value is from the perspective of leafNode player
+            # so the direction is positive for the leafNode player
             direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
             edge.stats['N'] += 1
             edge.stats['W'] += v_evaluated * direction
@@ -159,5 +161,4 @@ if __name__ == '__main__':
     node = Node(board, 1)
     model = ResidualCNN()
     tree = MCTS(node, model)
-    for state, pi in tree.selfplay()[0]:
-        state.visualise()
+

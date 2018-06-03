@@ -183,6 +183,15 @@ def decode_checker_index(model_output_index):
 
 
 
+def softmax(input):
+    ''' Compute the softmax (prediction) given input '''
+    input = np.copy(input).astype('float64')
+    input -= np.max(input, axis=-1, keepdims=True)  # For numerical stability
+    exps = np.exp(input)
+    return exps / np.sum(exps, axis=-1, keepdims=True)
+
+
+
 def deepsizeof(obj, visited):
     d = deepsizeof
     if id(obj) in visited:

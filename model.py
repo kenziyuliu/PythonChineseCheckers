@@ -19,7 +19,9 @@ class Model:
         self.version = version
 
     def predict(self, input_board):
-        return self.model.predict(np.expand_dims(input_board, axis=0))
+        logits, v = self.model.predict(np.expand_dims(input_board, axis=0).astype('float64'))
+        p = utils.softmax(logits)           # Apply softmax on the logits after prediction
+        return p.squeeze(), v.squeeze()     # Remove the extra batch dimension
 
     def save(self, save_dir, model_prefix, version):
         if not os.path.exists(save_dir):

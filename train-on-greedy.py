@@ -23,8 +23,8 @@ def generate_self_play(worker_id, num_self_play):
     num_normal_games = int(G_NORMAL_GAME_RATIO * num_self_play)
     num_randomised_games = num_self_play - num_normal_games
 
-    randomised_gen = GreedyDataGenerator(randomize=True)
-    normal_gen = GreedyDataGenerator(randomize=False)
+    randomised_gen = GreedyDataGenerator(randomised=True)
+    normal_gen = GreedyDataGenerator(randomised=False)
 
     for i in range(num_randomised_games):
         worker_result.append(randomised_gen.generate_play())
@@ -39,12 +39,6 @@ def generate_self_play(worker_id, num_self_play):
     import random
     random.shuffle(worker_result)
     print('Worker {}: generated {} self-plays'.format(worker_id, len(worker_result)))
-
-    # print('Worker {} first game state'.format(worker_id))
-    # # List of games -> (history, reward) -> (board, pi) -> board
-    # worker_result[0][0][0][0].visualise()
-    # import time
-    # time.sleep(5)
 
     return worker_result
 

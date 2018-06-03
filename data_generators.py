@@ -12,47 +12,11 @@ from model import Model
 
 
 class GreedyDataGenerator:
-    def __init__(self, randomize=False):
+    def __init__(self, randomised=False):
         self.cur_player = GreedyPlayer(player_num=1)
         self.next_player = GreedyPlayer(player_num=2)
-        self.randomize = randomize
-        self.board = None
-
-        # Set Generator to initial state
-        self.reset()
-
-
-    def reset(self):
-        # Initial State
-        self.board = Board()
-
-        # Randomise starting position if needed
-        if self.randomize:
-            self.board.board[:, :, 0] = 0
-            position_list = [(row, col) for row in range(BOARD_HEIGHT) for col in range(BOARD_WIDTH)]
-
-            # Randomly choose 12 positions and put checkers there
-            chosen_indexes = np.random.choice(len(position_list), size=NUM_CHECKERS*2, replace=False)
-            chosen_position = [position_list[i] for i in chosen_indexes]
-
-            self.board.checkers_pos = [None, {}, {}]
-            self.board.checkers_id = [None, {}, {}]
-
-            # Take care to initialise the checkers_pos/checkers_id lookup table
-            index = 0
-            for player_num in [PLAYER_ONE, PLAYER_TWO]:
-                for checker_id in range(NUM_CHECKERS):
-                    checker_pos = chosen_position[index]
-                    # self.board.board[chosen_position[index][0], chosen_position[index][1], 0] = player_num
-                    self.board.board[checker_pos][0] = player_num
-                    assert self.board.board[chosen_position[index][0], chosen_position[index][1], 0] == self.board.board[checker_pos][0]
-                    # self.board.checkers_pos[player_num][checker_id] = chosen_position[index]
-                    self.board.checkers_pos[player_num][checker_id] = checker_pos
-                    # self.board.checkers_id[player_num][chosen_position[index]] = checker_id
-                    self.board.checkers_id[player_num][checker_pos] = checker_id
-                    index += 1
-
-            assert index == NUM_CHECKERS * 2
+        self.randomised = randomised
+        self.board = Board(randomised=randomised)
 
 
     def swap_players(self):
@@ -77,7 +41,7 @@ class GreedyDataGenerator:
                 pi[neural_net_index] = 1.0 / len(best_moves)
 
             # 2 is the threshold to keep meaningful move history
-            if not self.randomize or count > THRESHOLD_FOR_RANDOMIZATION:
+            if not self.randomised or count > THRESHOLD_FOR_RANDOMIZATION:
                 play_history.append((copy.deepcopy(self.board), pi))
 
             pick_start, pick_end = random.choice(best_moves)
@@ -97,12 +61,15 @@ class GreedyDataGenerator:
             count += 1
 
         reward = utils.get_p1_winloss_reward(self.board, final_winner)
-        self.reset()    # Reset generator for next game
+
+        # Reset generator for next game
+        self.board = Board(randomised=self.randomised)
 
         return play_history, reward
 
 
+
 if __name__ == "__main__":
     for i in range(200):
-        generator = GreedyDataGenerator(randomize=True)
+        generator = GreedyDataGenerator(randomised=True)
         print(len(generator.generate_play()[0]))
