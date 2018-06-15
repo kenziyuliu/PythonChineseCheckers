@@ -59,9 +59,7 @@ class Game:
         np.random.seed()
         total_moves = 0
         history_dests = deque()
-        player_progresses = [0, 0]
-        player_turn = 0
-        num_useless_moves = 0
+        num_moves = 0
         while True:
             move_from, move_to = self.cur_player.decide_move(self.board, verbose=self.verbose, total_moves=total_moves)    # Get move from player
             winner = self.board.place(self.cur_player.player_num, move_from, move_to)  # Make the move on board and check winner
@@ -84,22 +82,14 @@ class Game:
                 break
 
             if enforce_move_limit:
-                if num_useless_moves >= PROGRESS_MOVE_LIMIT:
+                num_moves += 1
+
+                if num_moves >= PROGRESS_MOVE_LIMIT:
                     print('Game stopped by reaching progress move limit; Game Discarded')
                     winner = None
                     break
 
-                progress_evaluated = self.board.player_progress(player_turn + 1)
-                if progress_evaluated > player_progresses[player_turn]:
-                    num_useless_moves = int(num_useless_moves * (NUM_CHECKERS - 1) / NUM_CHECKERS)
-                    player_progresses[player_turn] = progress_evaluated
-                else:
-                    num_useless_moves += 1
-
-                player_turn = 1 - player_turn
-
             self.swap_players()
-
 
 
         if self.verbose:
