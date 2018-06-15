@@ -81,13 +81,12 @@ class Game:
                 winner = None
                 break
 
-            if enforce_move_limit:
-                num_moves += 1
+            num_moves += 1
 
-                if num_moves >= PROGRESS_MOVE_LIMIT:
-                    print('Game stopped by reaching progress move limit; Game Discarded')
-                    winner = None
-                    break
+            if enforce_move_limit and num_moves >= PROGRESS_MOVE_LIMIT:
+                print('Game stopped by reaching progress move limit; Game Discarded')
+                winner = None
+                break
 
             self.swap_players()
 
